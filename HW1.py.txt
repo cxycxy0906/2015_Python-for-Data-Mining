@@ -1,0 +1,27 @@
+def query(param, key=usda_key):
+    url = 'http://quickstats.nass.usda.gov/api/api_GET/?key=' + key
+    response = requests.get(url,params = param)
+    return response.json()
+
+tobacco2012 = {'source_desc': 'SURVEY',
+               'sector_desc': 'CROPS',
+               'commodity_desc':'TOBACCO',
+               'statisticcat_desc': 'PRODUCTION',
+               'short_desc': 'TOBACCO - PRODUCTION, MEASURED IN $',
+               'year': '2012',
+               'agg_level_desc': 'STATE'}
+
+tbc = query(tobacco2012)
+
+tbcdic = {x['location_disc']: x['Value'] for x['data'] in tbc}
+
+# Delete the "Other States"
+try:
+     del tbcdic['OTHER STATES']
+except KeyError:
+     pass
+
+tbcdic_int = {k: int(v.replace(',', '')) for k, v in tbcdic.items()}
+
+# Sort by values
+tbc_sorted = sorted(tbcdic_int.items(), key = operator.itemgetter(1), reverse = True)
